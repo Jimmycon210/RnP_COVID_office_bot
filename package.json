@@ -21,6 +21,7 @@
   "dependencies": {
     "@slack/bolt": "^2.1.1",
     "dotenv": "^8.2.0",
+    "edit-google-spreadsheet": "^0.3.0",
     "koa": "^2.13.0",
     "koa-bodyparser": "^4.3.0",
     "koa-router": "^9.1.0"

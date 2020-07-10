@@ -19,9 +19,62 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
                 },
                 value: `${false}`,
             }
+        ];
+
+        const officeOptions = [
+            {
+                text: {
+                    type: 'plain_text',
+                    text: 'Cleveland',
+                    emoji: true,
+                },
+                value: 'Cleveland',
+            },
+            {
+                text: {
+                    type: 'plain_text',
+                    text: 'Austin',
+                    emoji: true,
+                },
+                value: 'Austin',
+            },
+            {
+                text: {
+                    type: 'plain_text',
+                    text: 'Calgary',
+                    emoji: true,
+                },
+                value: 'Calgary',
+            },
+            {
+                text: {
+                    type: 'plain_text',
+                    text: 'Pittsburgh',
+                    emoji: true,
+                },
+                value: 'Pittsburgh',
+            },
         ]
 
         const blocks = [
+            {
+                type: 'input',
+                block_id: 'office_picker',
+                label: {
+                    type: 'plain_text',
+                    text: 'Which office will you be visiting?'
+                },
+                element: {
+                    type: 'static_select',
+                    placeholder: {
+                        type: 'plain_text',
+                        text: 'Choose your office',
+                        emoji: true,
+                    },
+                    options: officeOptions,
+                    action_id: 'office_value',
+                }
+            },
             {
                 type: 'input',
                 block_id: 'office_day',
@@ -36,7 +89,8 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
                         type: 'plain_text',
                         text: 'Select a date',
                         emoji: true,
-                    }
+                    },
+                    action_id: 'date_value'
                 }
             },
             {
@@ -54,6 +108,7 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
                         emoji: true,
                     },
                     options: yesNoOptions,
+                    action_id: 'symptoms_value',
                 }
             },
             {
@@ -71,6 +126,7 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
                         emoji: true,
                     },
                     options: yesNoOptions,
+                    action_id: 'pos_test_value',
                 }
             },
             {
@@ -88,6 +144,7 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
                         emoji: true,
                     },
                     options: yesNoOptions,
+                    action_id: 'travel_value'
                 }
             },
             {
@@ -105,6 +162,7 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
                         emoji: true,
                     },
                     options: yesNoOptions,
+                    action_id: 'isolate_value'
                 }
             },
         ];
