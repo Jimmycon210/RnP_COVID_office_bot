@@ -1,4 +1,10 @@
 const googleSheetCred = require('../../googleAppsScriptCredentials.json');
+require('dotenv').config();
+const {
+    getAuthToken,
+    getSpreadSheet,
+    getSpreadSheetValues
+} = require('../googleapis/googleSheetService');
 
 async function submitted ({ ack, body, view, context, client }) {
     try {
@@ -40,7 +46,15 @@ async function submitted ({ ack, body, view, context, client }) {
         const userInfo = await client.users.info({
             user: body.user.id,
             token: context.botToken
-        })
+        });
+
+        const auth = await getAuthToken();
+        const response = await getSpreadSheetValues({ 
+            spreadsheetId: '1IhEnxzkgTHMyFP9Ig1dhL63Douc6qzX9A9EzSpU4V-M',
+            sheetName: 'Sheet1',
+            auth: auth
+        });
+        console.log('output for getSpreadSheetValues', JSON.stringify(response.data, null, 2));
 
         const usersRealName = userInfo.real_name;
 
