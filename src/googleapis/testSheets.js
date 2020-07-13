@@ -1,6 +1,5 @@
 const {
     getAuthToken,
-    getSpreadSheet,
     getSpreadSheetValues
 } = require('./googleSheetService.js');
 

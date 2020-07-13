@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/Jimmycon210/RnP_COVID_office_bot#readme",
   "dependencies": {
+    "@polyn/logger": "^0.5.1",
     "@slack/bolt": "^2.1.1",
     "dotenv": "^8.2.0",
     "googleapis": "^52.1.0",

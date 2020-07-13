@@ -29,9 +29,23 @@ async function getSpreadSheetValues({spreadsheetId, auth, sheetName}) {
   return res;
 }
 
+async function batchUpdateSpreadSheet({ spreadsheetId, auth }, updateData) {
+    const request = {
+        spreadsheetId: spreadsheetId,
+        resource: {
+            valueInputOption: 'USER_ENTERED',
+            data: updateData
+        }, 
+        auth
+    }
+    const res = (await sheets.spreadsheets.values.batchUpdate(request)).data;
+    return res;
+}
+
 
 module.exports = {
   getAuthToken,
   getSpreadSheet,
-  getSpreadSheetValues
+  getSpreadSheetValues,
+  batchUpdateSpreadSheet
 }

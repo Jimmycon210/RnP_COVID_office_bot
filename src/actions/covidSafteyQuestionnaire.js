@@ -1,6 +1,8 @@
+const logger = require("../../visualizations/logger");
+
 async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
     try{
-        ack();
+        await ack();
 
         const yesNoOptions = [
             {
@@ -9,7 +11,7 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
                     text: 'Yes',
                     emoji: true,
                 },
-                value: `${true}`,
+                value: `Yes`,
             },
             {
                 text: {
@@ -17,19 +19,11 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
                     text: 'No',
                     emoji: true,
                 },
-                value: `${false}`,
+                value: `No`,
             }
         ];
 
         const officeOptions = [
-            {
-                text: {
-                    type: 'plain_text',
-                    text: 'Cleveland',
-                    emoji: true,
-                },
-                value: 'Cleveland',
-            },
             {
                 text: {
                     type: 'plain_text',
@@ -49,11 +43,46 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
             {
                 text: {
                     type: 'plain_text',
+                    text: 'Cleveland',
+                    emoji: true,
+                },
+                value: 'Cleveland',
+            },
+            {
+                text: {
+                    type: 'plain_text',
                     text: 'Pittsburgh',
                     emoji: true,
                 },
                 value: 'Pittsburgh',
             },
+        ]
+
+        const timeOptions = [
+            {
+                text: {
+                    type: 'plain_text',
+                    text: 'All Day',
+                    emoji: true,
+                },
+                value: 'full day'
+            },
+            {
+                text: {
+                    type: 'plain_text',
+                    text: 'Half Day – Morning',
+                    emoji: true,
+                },
+                value: 'half day - morning'
+            },
+            {
+                text: {
+                    type: 'plain_text',
+                    text: 'Half Day – Afternoon',
+                    emoji: true,
+                },
+                value: 'half day - afternoon'
+            }
         ]
 
         const blocks = [
@@ -84,13 +113,30 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
                 },
                 element: {
                     type: 'datepicker',
-                    // initial_date: '2020-01-01',
                     placeholder: {
                         type: 'plain_text',
                         text: 'Select a date',
                         emoji: true,
                     },
                     action_id: 'date_value'
+                }
+            },
+            {
+                type: 'input',
+                block_id: 'time_picker',
+                label: {
+                    type: 'plain_text',
+                    text: 'When will you be in the office?'
+                },
+                element: {
+                    type: 'static_select',
+                    placeholder: {
+                        type: 'plain_text',
+                        text: 'Choose when you will be in office',
+                        emoji: true,
+                    },
+                    options: timeOptions,
+                    action_id: 'time_value',
                 }
             },
             {
@@ -165,6 +211,13 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
                     action_id: 'isolate_value'
                 }
             },
+            {
+                type: 'section',
+                text: {
+                    type: 'mrkdwn',
+                    text: '_If you answered “yes” to to any of the questions 4-7, you will not be permitted to enter the office and it is requested to consult your treating physician and/or your State/Provincial Health governing body for further direction._\n_If you answered “no” to all of the questions 4-7, you will be permitted to enter the office and will be required to follow the office safety protocols as outlined and pinned in your respective office channel._\n_Regardless of your answers, please still submit the form_'
+                },
+            }
         ];
 
         view = {
@@ -188,13 +241,16 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
             blocks,
         };
 
+        logger.emit('*', 'Questionnaire opened', { user: `${body.user_id}` });
+
         await client.views.open({
             token: process.env.SLACK_BOT_TOKEN,
             trigger_id: body.trigger_id,
             view,
         });
     } catch(error) {
-        console.error(error);
+        logger.emit('*', 'error', error);
+        throw error;
     }
 }
 
