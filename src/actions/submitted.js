@@ -7,22 +7,23 @@ const {
 } = require('../googleapis/googleSheetService');
 
 //BELOW IS FOR TESTING, ONLY WORKS IN JAMES CONWAY'S TEST SLACK WORKSPACE
-const OFFICE_TO_CHANNEL = {
-    'Austin': 'C016TL16G06',
-    'Calgary': 'C017Q7YCMC0',
-    'Cleveland': 'C016KL999EK',
-    'Pittsburgh': 'C017D1P61EV'
-};
+// const OFFICE_TO_CHANNEL = {
+//     'Austin': 'C016TL16G06',
+//     'Calgary': 'C017Q7YCMC0',
+//     'Cleveland': 'C016KL999EK',
+//     'Pittsburgh': 'C017D1P61EV'
+// };
 
-/*
-THIS BELOW IS FOR PRODUCTION, WILL ONLY WORK ON R&P's WORKSPACE
+
+// THIS BELOW IS FOR PRODUCTION, WILL ONLY WORK ON R&P's WORKSPACE
 const OFFICE_TO_CHANNEL = {
     'Austin': 'C03K6PVF0',
     'Calgary': 'C029VA4DR',
     'Cleveland': 'C3RJ4C99A',
     'Pittsburgh': 'C3029JY7N'
 }
-*/
+
+const spreadsheetId = '1IhEnxzkgTHMyFP9Ig1dhL63Douc6qzX9A9EzSpU4V-M';
 
 async function submitted ({ ack, body, view, context, client }) {
     try {
@@ -74,20 +75,37 @@ async function submitted ({ ack, body, view, context, client }) {
 
         const auth = await getAuthToken();
         const response = await getSpreadSheetValues({ 
-            spreadsheetId: '1IhEnxzkgTHMyFP9Ig1dhL63Douc6qzX9A9EzSpU4V-M',
+            spreadsheetId: spreadsheetId,
             sheetName: 'Sheet1',
             auth: auth
         });
+
+        const officeMilliseconds = Date.parse(dayInOffice);
+        const todayMilliseconds = Date.now();
+        if(todayMilliseconds - 86400000 > officeMilliseconds) {
+            await ack(
+                {
+                    response_action: 'errors',
+                    errors: {
+                        office_day: 'The day you chose is in the past. Please choose today or a day in the future.',
+                    },
+                }
+            );
+            return;
+        }
+
+        const date = new Date(officeMilliseconds);
+        const dateString = `${date.getMonth()}/${date.getDate()}/${date.getFullYear()}`;
 
         const rowToFill = response.data.values.length+1;
         const updateData = {
             range: `Sheet1!A${rowToFill}:H${rowToFill}`,
             majorDimension: 'ROWS',
-            values: [ [usersRealName, office, dayInOffice, officeTime, hasSymptoms, hasPosTest, hasTraveled, hasIsolated] ]
+            values: [ [usersRealName, office, dateString, officeTime, hasSymptoms, hasPosTest, hasTraveled, hasIsolated] ]
         }
 
         const updateResponse = await batchUpdateSpreadSheet({
-            spreadsheetId: '1IhEnxzkgTHMyFP9Ig1dhL63Douc6qzX9A9EzSpU4V-M',
+            spreadsheetId: spreadsheetId,
             auth
         }, updateData);
 
@@ -96,20 +114,20 @@ async function submitted ({ ack, body, view, context, client }) {
         await client.chat.postMessage({
             token: context.botToken,
             channel: userInfo.user.id,
-            text: `Thanks for filling out the questionnaire!\nWhile this is reviewed and before you enter the office, be sure to checkout the safety protocols for your office at <#${OFFICE_TO_CHANNEL[office]}>`
+            text: `Thanks for filling out the questionnaire!\nWhile this is reviewed and before you enter the office, be sure to checkout the safety protocols for your office at <#${OFFICE_TO_CHANNEL[office]}>.\nIf you have any additional questions or concerns please reach out directly to <@U02LD42AG> or <@UB5CN2JPN>.`
         });
 
-        //messages the administrator of the bot (Lara) if someone answers yes to one of the COVID-19 questions
+        //messages the R&P COVID-19 office reopening channel if there is a question answered yes.
         if(hasSymptoms === 'Yes' || hasPosTest === 'Yes' || hasTraveled === 'Yes' || hasIsolated === 'Yes') {
-            let message = `<!here> Hey there R&P safety team! :wave:\n${usersRealName} had some answers on the COVID-19 safety questionnaire that raised some flags :triangular_flag_on_post:. They answered 'Yes' for the following question(s):\n`;
+            let message = `<!here> Hey there R&P safety team! :wave:\n${usersRealName} had some answers on the COVID-19 health questionnaire that raised some flags :triangular_flag_on_post:. They answered 'Yes' for the following question(s):\n`;
             if(hasSymptoms === 'Yes') { message+=`\t- Do you or anyone you reside with currently have any symptoms related to COVID-19?\n`; }
             if(hasPosTest  === 'Yes') { message+=`\t- Have you, or anyone in the same household, tested positive for COVID-19 or are waiting for test results for COVID-19?\n`; }
             if(hasTraveled === 'Yes') { message+=`\t- Have you traveled internationally in the past 14 days?\n`; }
             if(hasIsolated === 'Yes') { message+=`\t- Have you been required or asked to self isolate?\n`; }
-            message+= `${usersRealName} plans on visiting the ${office} office on ${dayInOffice}. They plan on being there for a ${officeTime} The rest of the questionnaire information can be found on the Google Sheet linked here: <https://docs.google.com/spreadsheets/d/1IhEnxzkgTHMyFP9Ig1dhL63Douc6qzX9A9EzSpU4V-M/edit#gid=0> starting on cell A${rowToFill}`;
+            message+= `${usersRealName} plans on visiting the ${office} office on ${dateString}. They plan on being there for a ${officeTime}. The rest of the questionnaire information can be found on the Google Sheet linked here: <https://docs.google.com/spreadsheets/d/1IhEnxzkgTHMyFP9Ig1dhL63Douc6qzX9A9EzSpU4V-M/edit#gid=0> starting on cell A${rowToFill}`;
             await client.chat.postMessage({
                 token: context.botToken,
-                channel: 'C0170RTSTJ7', 
+                channel: 'G016Z9EGH5K', 
                 text: message,
             });
         }
@@ -119,6 +137,3 @@ async function submitted ({ ack, body, view, context, client }) {
 }
 
 module.exports = submitted;
-
-//FOR PRODUCTION QUESTIONNAIRE RESPONSE CHANNEL
-//https://robotsandpencils.slack.com/archives/G016Z9EGH5K

@@ -14,7 +14,7 @@ const app = new App({
 
 function initListeners() {
     app.command('/test_covid', tester);
-    app.command('/covid_safety', covidSafteyQuestionnaire);
+    app.command('/covid-questionnarie', covidSafteyQuestionnaire);
     app.view('submitted', submitted);
 }
 

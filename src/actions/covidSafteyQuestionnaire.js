@@ -215,7 +215,7 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
                 type: 'section',
                 text: {
                     type: 'mrkdwn',
-                    text: '_If you answered “yes” to to any of the questions 4-7, you will not be permitted to enter the office and it is requested to consult your treating physician and/or your State/Provincial Health governing body for further direction._\n_If you answered “no” to all of the questions 4-7, you will be permitted to enter the office and will be required to follow the office safety protocols as outlined and pinned in your respective office channel._\n_Regardless of your answers, please still submit the form_'
+                    text: '_If you answered “yes” to to any of the questions 4-7, you will not be permitted to enter the office and it is requested to consult your treating physician and/or your State/Provincial Health governing body for further direction._\n_If you answered “no” to all of the questions 4-7, you will be permitted to enter the office and will be required to follow the office safety protocols as outlined and pinned in your respective office channel._\n_Regardless of your answers, please still submit the form._'
                 },
             }
         ];
@@ -225,7 +225,7 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
             callback_id: 'submitted',
             title: {
                 type: 'plain_text',
-                text: 'Office COVID-19 Safety',
+                text: 'COVID-19 Questionnaire',
                 emoji: true,
             },
             submit: {
