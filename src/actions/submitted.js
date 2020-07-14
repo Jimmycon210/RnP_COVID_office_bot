@@ -14,8 +14,8 @@ const {
 //     'Pittsburgh': 'C017D1P61EV'
 // };
 
-
-// THIS BELOW IS FOR PRODUCTION, WILL ONLY WORK ON R&P's WORKSPACE
+// BELOW IS FOR PRODUCTION, WILL ONLY WORK ON R&P's WORKSPACE
+// Office name to office channel IDs
 const OFFICE_TO_CHANNEL = {
     'Austin': 'C03K6PVF0',
     'Calgary': 'C029VA4DR',
@@ -27,6 +27,7 @@ const spreadsheetId = '1IhEnxzkgTHMyFP9Ig1dhL63Douc6qzX9A9EzSpU4V-M';
 
 async function submitted ({ ack, body, view, context, client }) {
     try {
+        // Access and store all variables from the submitted modal
         const {
             state: {
                 values: {
@@ -73,6 +74,7 @@ async function submitted ({ ack, body, view, context, client }) {
         });
         const usersRealName = userInfo.user.real_name;
 
+        // Authorize access to the Google Sheet and get its values in order to determine which row to fill.
         const auth = await getAuthToken();
         const response = await getSpreadSheetValues({ 
             spreadsheetId: spreadsheetId,
@@ -80,6 +82,7 @@ async function submitted ({ ack, body, view, context, client }) {
             auth: auth
         });
 
+        // Get the date in a format which it can be compared (milliseconds) to makes sure it is not in the past.
         const officeMilliseconds = Date.parse(dayInOffice);
         const todayMilliseconds = Date.now();
         if(todayMilliseconds - 86400000 > officeMilliseconds) {
@@ -94,9 +97,11 @@ async function submitted ({ ack, body, view, context, client }) {
             return;
         }
 
+        // Change format to mm/dd/yyyy for bot messages and for spreadsheet
         const date = new Date(officeMilliseconds);
         const dateString = `${date.getMonth()}/${date.getDate()}/${date.getFullYear()}`;
 
+        // Creates the necessary parameter to pass through to the Google API for updating the Google Sheet
         const rowToFill = response.data.values.length+1;
         const updateData = {
             range: `Sheet1!A${rowToFill}:H${rowToFill}`,
@@ -104,7 +109,8 @@ async function submitted ({ ack, body, view, context, client }) {
             values: [ [usersRealName, office, dateString, officeTime, hasSymptoms, hasPosTest, hasTraveled, hasIsolated] ]
         }
 
-        const updateResponse = await batchUpdateSpreadSheet({
+        // Updates the Google Sheet
+        await batchUpdateSpreadSheet({
             spreadsheetId: spreadsheetId,
             auth
         }, updateData);
@@ -117,7 +123,7 @@ async function submitted ({ ack, body, view, context, client }) {
             text: `Thanks for filling out the questionnaire!\nWhile this is reviewed and before you enter the office, be sure to checkout the safety protocols for your office at <#${OFFICE_TO_CHANNEL[office]}>.\nIf you have any additional questions or concerns please reach out directly to <@U02LD42AG> or <@UB5CN2JPN>.`
         });
 
-        //messages the R&P COVID-19 office reopening channel if there is a question answered yes.
+        // Messages the R&P COVID-19 office reopening channel if there is a question answered yes. Tack each question that was answered yes onto the message.
         if(hasSymptoms === 'Yes' || hasPosTest === 'Yes' || hasTraveled === 'Yes' || hasIsolated === 'Yes') {
             let message = `<!here> Hey there R&P safety team! :wave:\n${usersRealName} had some answers on the COVID-19 health questionnaire that raised some flags :triangular_flag_on_post:. They answered 'Yes' for the following question(s):\n`;
             if(hasSymptoms === 'Yes') { message+=`\t- Do you or anyone you reside with currently have any symptoms related to COVID-19?\n`; }

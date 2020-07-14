@@ -4,6 +4,7 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
     try{
         await ack();
 
+        // Initialize the options for the static select yes or no drop down menu
         const yesNoOptions = [
             {
                 text: {
@@ -23,6 +24,7 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
             }
         ];
 
+        // Initialize the options for the static select office drop down menu
         const officeOptions = [
             {
                 text: {
@@ -58,6 +60,7 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
             },
         ]
 
+        // Initialize the options for the static select time in office drop down menu
         const timeOptions = [
             {
                 text: {
@@ -85,6 +88,7 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
             }
         ]
 
+        // Initialize the input blocks and the text block for the modal
         const blocks = [
             {
                 type: 'input',
@@ -220,6 +224,7 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
             }
         ];
 
+        // Initialize the modal view
         view = {
             type: 'modal',
             callback_id: 'submitted',
@@ -242,7 +247,7 @@ async function covidSafteyQuestionnaire ({ ack, body, client, context }) {
         };
 
         logger.emit('*', 'Questionnaire opened', { user: `${body.user_id}` });
-
+    
         await client.views.open({
             token: process.env.SLACK_BOT_TOKEN,
             trigger_id: body.trigger_id,
